@@ -17,56 +17,61 @@
         rel="stylesheet" />
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <script>
-    tailwind.config = {
-        darkMode: "class",
-        theme: {
-            extend: {
-                colors: {
-                    "primary": "#11d452",
-                    "background-light": "#f6f8f6",
-                    "background-dark": "#102216",
-                    "surface-dark": "#28392e",
-                },
-                fontFamily: {
-                    "display": ["Inter", "sans-serif"]
-                },
-                borderRadius: {
-                    "DEFAULT": "0.25rem",
-                    "lg": "0.5rem",
-                    "xl": "0.75rem",
-                    "full": "9999px"
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#11d452",
+                        "background-light": "#f6f8f6",
+                        "background-dark": "#102216",
+                        "surface-dark": "#28392e",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
                 },
             },
-        },
-    }
+        }
     </script>
+    <link rel="stylesheet" href="/ASSAD/assets/css/styles.css">
     <style>
-    body {
-        font-family: 'Inter', sans-serif;
-    }
+        body {
+            font-family: 'Inter', sans-serif;
+        }
 
-    ::-webkit-scrollbar {
-        width: 8px;
-        height: 8px;
-    }
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
 
-    ::-webkit-scrollbar-track {
-        background: #102216;
-    }
+        ::-webkit-scrollbar-track {
+            background: #102216;
+        }
 
-    ::-webkit-scrollbar-thumb {
-        background: #28392e;
-        border-radius: 4px;
-    }
+        ::-webkit-scrollbar-thumb {
+            background: #28392e;
+            border-radius: 4px;
+        }
 
-    ::-webkit-scrollbar-thumb:hover {
-        background: #11d452;
-    }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #11d452;
+        }
     </style>
 </head>
 
 <body
     class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-white h-screen flex overflow-hidden font-display selection:bg-primary selection:text-black">
+    <div id="loader">
+        <div class="spinner" aria-hidden="true"></div>
+        <div class="text-sm text-white mt-2">Loading...</div>
+    </div>
     <aside
         class="w-64 bg-background-dark border-r border-[#28392e] flex flex-col flex-shrink-0 transition-all duration-300 hidden md:flex">
         <div class="p-6 flex items-center gap-3">
@@ -157,6 +162,11 @@
                 <p class="text-sm font-medium leading-normal">Animal Management</p>
             </a>
             <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-surface-dark/50 transition-colors group text-[#9db9a6] hover:text-white"
+                href="/ASSAD/Admin/habitats/habitats.php">
+                <span class="material-symbols-outlined group-hover:scale-110 transition-transform">landscape</span>
+                <p class="text-sm font-medium leading-normal">Habitats</p>
+            </a>
+            <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-surface-dark/50 transition-colors group text-[#9db9a6] hover:text-white"
                 href="/ASSAD/Admin/Tours/tours.php">
                 <span class="material-symbols-outlined group-hover:scale-110 transition-transform">map</span>
                 <p class="text-sm font-medium leading-normal">Guided Tours</p>
@@ -218,6 +228,7 @@
                     <h2 class="text-white text-2xl font-bold">Welcome back, Admin 👋</h2>
                     <p class="text-[#9db9a6] mt-1">Here is what is happening with CAN 2025 Virtual Zoo today.</p>
                 </div>
+                <script src="/ASSAD/assets/js/preloader.js" defer></script>
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                     <div
                         class="flex flex-col p-5 bg-surface-dark rounded-xl border border-white/5 hover:border-primary/30 transition-colors shadow-sm">
