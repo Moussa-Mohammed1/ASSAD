@@ -13,40 +13,45 @@
         rel="stylesheet" />
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <script id="tailwind-config">
-    tailwind.config = {
-        darkMode: "class",
-        theme: {
-            extend: {
-                colors: {
-                    "primary": "#ee8c2b",
-                    "background-light": "#f8f7f6",
-                    "background-dark": "#221910",
-                    "card-dark": "#2d241b",
-                    "card-light": "#ffffff",
-                    "text-muted-dark": "#b9ab9d",
-                    "text-muted-light": "#6b5d52",
-                },
-                fontFamily: {
-                    "display": ["Spline Sans", "sans-serif"]
-                },
-                borderRadius: {
-                    "DEFAULT": "1rem",
-                    "lg": "2rem",
-                    "xl": "3rem",
-                    "full": "9999px"
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#ee8c2b",
+                        "background-light": "#f8f7f6",
+                        "background-dark": "#221910",
+                        "card-dark": "#2d241b",
+                        "card-light": "#ffffff",
+                        "text-muted-dark": "#b9ab9d",
+                        "text-muted-light": "#6b5d52",
+                    },
+                    fontFamily: {
+                        "display": ["Spline Sans", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "1rem",
+                        "lg": "2rem",
+                        "xl": "3rem",
+                        "full": "9999px"
+                    },
                 },
             },
-        },
-    }
+        }
     </script>
+    <link rel="stylesheet" href="/ASSAD/assets/css/styles.css">
     <style>
-    body {
-        font-family: "Spline Sans", sans-serif;
-    }
+        body {
+            font-family: "Spline Sans", sans-serif;
+        }
     </style>
 </head>
 
 <body>
+    <div id="loader">
+        <div class="spinner" aria-hidden="true"></div>
+        <div class="text-sm text-white mt-2">Loading...</div>
+    </div>
     <div
         class="relative flex h-auto min-h-screen w-full flex-col bg-background-light dark:bg-background-dark group/design-root overflow-x-hidden text-[#111418] dark:text-white">
         <div class="layout-container flex h-full grow flex-col">
@@ -238,3 +243,4 @@
 </body>
 
 </html>
+<script src="/ASSAD/assets/js/preloader.js" defer></script>
