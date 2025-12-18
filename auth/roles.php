@@ -1,3 +1,15 @@
+<?php
+include "./../config.php";
+session_start();
+if (isset($_SESSION['currentuser'])) {
+    $user = $_SESSION['currentuser'];
+} else {
+    session_destroy();
+    header("Location: ./login.php");
+    exit();
+}
+?>
+
 <!DOCTYPE html>
 <html class="dark" lang="en">
 
@@ -128,17 +140,19 @@
                 </div>
                 <div class="flex flex-1 justify-end gap-4 md:gap-8 items-center">
                     <div class="flex items-center gap-2">
-                        <span class="text-sm font-medium hidden md:block text-[#111418] dark:text-white">Welcome,
-                            User</span>
+                        <p class="text-sm font-medium hidden md:block text-[#111418] dark:text-white">
+                            Welcome, <span class="text-yellow-400"><?= $user ?></span>
+                        </p>
                         <div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10 border-2 border-primary"
                             data-alt="User profile avatar placeholder"
                             style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAVsl_y6jdgqk3SBcmR81Ple2OTldm6Ci-VEzXpXqTWzK4I0BBN05YhqWR72rYsZ9Puk46y1gWekoAP-m7tbk5bA7yDsncu7Lo-qUoqXlqMeugFIcUpmr8-EP7hPjf1FZlU6876VZ8e7zZdOcz6ieNDQoicd0SnBeqyt0QgLm7hG7Qsoaz-weG5QJMWN38AODKvLha_XbE1CUzvmnH9z32Dlq2iX2afcZbkAxsoePq1XD76qajUKsBscn_9kgljNLEAx1alD5bGnQHZ");'>
                         </div>
                     </div>
-                    <button
+                    <a
+                        href="./login.php"
                         class="flex cursor-pointer items-center justify-center overflow-hidden rounded-full h-10 w-10 bg-[#e6e0db] dark:bg-[#393028] text-[#111418] dark:text-white hover:bg-primary hover:text-white transition-colors">
                         <span class="material-symbols-outlined">logout</span>
-                    </button>
+                    </a>
                 </div>
             </header>
             <div class="px-4 md:px-40 mt-10  flex flex-1 justify-center py-5 md:py-10">
@@ -192,11 +206,14 @@
                                     </p>
                                 </div>
                                 <div class="mt-auto pt-4">
-                                    <button
-                                        class="w-full cursor-pointer flex items-center justify-center gap-2 rounded-full h-12 px-6 bg-primary text-[#181411] text-base font-bold leading-normal hover:bg-orange-400 transition-colors">
-                                        <span>Join as Visitor</span>
-                                        <span class="material-symbols-outlined text-sm">arrow_forward</span>
-                                    </button>
+                                    <form action="./../controllers/roles-control.php" method="POST">
+                                        <input type="hidden" name="role" value="Visitor">
+                                        <button type="submit"
+                                            class="w-full cursor-pointer flex items-center justify-center gap-2 rounded-full h-12 px-6 bg-primary text-[#181411] text-base font-bold leading-normal hover:bg-orange-400 transition-colors">
+                                            <span>Join as Visitor</span>
+                                            <span class="material-symbols-outlined text-sm">arrow_forward</span>
+                                        </button>
+                                    </form>
                                 </div>
                             </div>
                         </div>
@@ -221,11 +238,14 @@
                                     </p>
                                 </div>
                                 <div class="mt-auto pt-4">
-                                    <button
-                                        class="w-full cursor-pointer flex items-center justify-center gap-2 rounded-full h-12 px-6 bg-[#e6e0db] dark:bg-[#393028] text-[#111418] dark:text-white text-base font-bold leading-normal hover:bg-primary hover:text-[#181411] transition-all border border-transparent hover:border-primary">
-                                        <span>Join as Guide</span>
-                                        <span class="material-symbols-outlined text-sm">arrow_forward</span>
-                                    </button>
+                                    <form action="./../controllers/roles-control.php" method="POST">
+                                        <input type="hidden" name="role" value="guide">
+                                        <button
+                                            class="w-full cursor-pointer flex items-center justify-center gap-2 rounded-full h-12 px-6 bg-[#e6e0db] dark:bg-[#393028] text-[#111418] dark:text-white text-base font-bold leading-normal hover:bg-primary hover:text-[#181411] transition-all border border-transparent hover:border-primary">
+                                            <span>Join as Guide</span>
+                                            <span class="material-symbols-outlined text-sm">arrow_forward</span>
+                                        </button>
+                                    </form>
                                 </div>
                             </div>
                         </div>
