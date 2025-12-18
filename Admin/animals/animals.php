@@ -64,10 +64,10 @@
 
 <body
     class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-white h-screen flex overflow-hidden font-display selection:bg-primary selection:text-black">
-    <div id="loader">
+    <!-- <div id="loader">
         <div class="spinner" aria-hidden="true"></div>
         <div class="text-sm text-white mt-2">Loading...</div>
-    </div>
+    </div> -->
     <aside
         class="w-64 bg-background-dark border-r border-[#28392e] flex flex-col flex-shrink-0 transition-all duration-300 hidden md:flex">
         <div class="p-6 flex items-center gap-3">

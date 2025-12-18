@@ -1,3 +1,12 @@
+<?php
+    include "./../config.php";
+    session_start();
+    $logged = $_SESSION['loggeduser'] ?? '';
+
+    if(!$logged || $logged['role'] != 'Admin'){header('Location: ./../auth/login.php');exit();}
+    
+?>
+
 <!DOCTYPE html>
 
 <html class="dark" lang="en">
@@ -178,11 +187,11 @@
                 class="flex items-center gap-3 p-2 rounded-lg bg-surface-dark/50 hover:bg-surface-dark cursor-pointer transition-colors">
                 <div class="bg-center bg-no-repeat bg-cover rounded-full h-8 w-8"
                     data-alt="Profile picture of the admin user"
-                    style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBKhw_hzdz9yoEDpYxdcLkdxEJGsxOm2FEwVJBj3LZ3rAHeY5Na3uNzpt1VCN2GyQBN348ClzgctgUQ-LE70ebh8ZQjAs_HoEo4FEtphuLmCmkcA7JesvqP3r1jVV8GeyA6okkfHYepeQfbA3Qe6m1IugrAfH6-vtFQ5mzPs2dXMklDDx-_iH6M7itv4BWiqejYaxS0OoH6qe4wrtIZbPEFPc_0t1T2Fv4JSw6cTlz5IFbJFjUnOp6NnfYaWOHEe-Gw5oGwkgUV-RUO");'>
+                    style='background-image: url("https://avatars.githubusercontent.com/u/209652052?v=4");'>
                 </div>
                 <div class="flex flex-col">
                     <p class="text-white text-xs font-bold">Admin User</p>
-                    <p class="text-[#9db9a6] text-[10px]">admin@assad.zoo</p>
+                    <p class="text-[#9db9a6] text-[10px]"><?= $logged['nom']?>@assad.zoo</p>
                 </div>
             </div>
         </div>
