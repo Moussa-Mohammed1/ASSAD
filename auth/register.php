@@ -1,3 +1,14 @@
+<?php
+    include "./../config.php";
+    session_start();
+    $currentuser = $_SESSION['currentuser'] ?? '';
+
+    $errors = $_SESSION['errors'] ?? [];
+    $oldvalues = $_SESSION['oldvalues'] ?? [];
+
+    unset($_SESSION['errors'], $_SESSION['oldvalues']);
+?>
+
 <!DOCTYPE html>
 
 <html class="dark" lang="en">
@@ -180,13 +191,71 @@
         </div>
         <div
             class="flex-1 flex flex-col justify-center items-center p-6 sm:p-8 lg:p-12 bg-[#111714] relative overflow-y-auto">
-            <div class="lg:hidden w-full flex justify-center mb-6">
+            <div class="lg:hidden w-full mt-10 flex justify-center mb-6">
                 <div class="flex items-center gap-2 text-white">
                     <div class="size-7 text-primary">
-                        <svg fill="currentColor" viewbox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
-                            <path
-                                d="M44 11.2727C44 14.0109 39.8386 16.3957 33.69 17.6364C39.8386 18.877 44 21.2618 44 24C44 26.7382 39.8386 29.123 33.69 30.3636C39.8386 31.6043 44 33.9891 44 36.7273C44 40.7439 35.0457 44 24 44C12.9543 44 4 40.7439 4 36.7273C4 33.9891 8.16144 31.6043 14.31 30.3636C8.16144 29.123 4 26.7382 4 24C4 21.2618 8.16144 18.877 14.31 17.6364C8.16144 16.3957 4 14.0109 4 11.2727C4 7.25611 12.9543 4 24 4C35.0457 4 44 7.25611 44 11.2727Z">
-                            </path>
+                        <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" fill="#000000"
+                            transform="matrix(-1, 0, 0, 1, 0, 0)">
+                            <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+                            <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>
+                            <g id="SVGRepo_iconCarrier">
+                                <title>lion</title>
+                                <g id="lion">
+                                    <circle cx="36.5" cy="25.5" r="21.5" style="fill:#e5efef"></circle>
+                                    <circle cx="13" cy="7" r="2"
+                                        style="fill:none;stroke:#4c241d;stroke-linecap:round;stroke-linejoin:round;stroke-width:2px">
+                                    </circle>
+                                    <circle cx="56.044" cy="22.014" r="1.069" style="fill:#4c241d"></circle>
+                                    <line x1="53" y1="5" x2="56" y2="8"
+                                        style="fill:none;stroke:#4c241d;stroke-linecap:round;stroke-linejoin:round;stroke-width:2px">
+                                    </line>
+                                    <line x1="56" y1="5" x2="53" y2="8"
+                                        style="fill:none;stroke:#4c241d;stroke-linecap:round;stroke-linejoin:round;stroke-width:2px">
+                                    </line>
+                                    <polygon points="9 17 21 17 21 19 15 28 5 27 3 22 7 20 9 17"
+                                        style="fill:#ffce56;stroke:#4c241d;stroke-linecap:round;stroke-linejoin:round;stroke-width:2px">
+                                    </polygon>
+                                    <path d="M16,34V55h-.862A2.138,2.138,0,0,0,13,57.138V59h7l2.5-15.5"
+                                        style="fill:#ffce56;stroke:#4c241d;stroke-linecap:round;stroke-linejoin:round;stroke-width:2px">
+                                    </path>
+                                    <path
+                                        d="M40.007,42s0,6,7,8l-3,5h-.862a2.138,2.138,0,0,0-2.138,2.138V59h6l4-10s7-20-7-21"
+                                        style="fill:#ffce56;stroke:#4c241d;stroke-linecap:round;stroke-linejoin:round;stroke-width:2px">
+                                    </path>
+                                    <path
+                                        d="M20,41V55h-.862A2.138,2.138,0,0,0,17,57.138V59h7l2.5-15.5A14.594,14.594,0,0,0,34,45c5.27-.6,11.532-3.578,15-3a7.966,7.966,0,0,0,6.5,7.5l-1,5.5h-.862A2.138,2.138,0,0,0,51.5,57.138V59h6l2-10.5-1-4s8-16-6-17-17-1-17-1"
+                                        style="fill:#ffce56;stroke:#4c241d;stroke-linecap:round;stroke-linejoin:round;stroke-width:2px">
+                                    </path>
+                                    <path
+                                        d="M38,15l1.138.853A10.729,10.729,0,0,0,45.578,18H58a5,5,0,0,1,5,5v1a5,5,0,0,1-5,5h-.283"
+                                        style="fill:none;stroke:#4c241d;stroke-linecap:round;stroke-linejoin:round;stroke-width:2px">
+                                    </path>
+                                    <ellipse cx="35.5" cy="12" rx="2.5" ry="3.703"
+                                        transform="translate(0.223 24.639) rotate(-38.389)"
+                                        style="fill:#bf7e68;stroke:#4c241d;stroke-linecap:round;stroke-linejoin:round;stroke-width:2px">
+                                    </ellipse>
+                                    <circle cx="11.044" cy="20.014" r="1.069" style="fill:#4c241d"></circle>
+                                    <line x1="49" y1="42" x2="49" y2="38"
+                                        style="fill:#ffce56;stroke:#4c241d;stroke-linecap:round;stroke-linejoin:round;stroke-width:2px">
+                                    </line>
+                                    <line x1="5" y1="59" x2="35" y2="59"
+                                        style="fill:none;stroke:#4c241d;stroke-linecap:round;stroke-linejoin:round;stroke-width:2px">
+                                    </line>
+                                    <line x1="39" y1="59" x2="62" y2="59"
+                                        style="fill:none;stroke:#4c241d;stroke-linecap:round;stroke-linejoin:round;stroke-width:2px">
+                                    </line>
+                                    <path
+                                        d="M41,26l-6.74-2.384L29.7,16.324a8.578,8.578,0,0,0-8.089-4c-1.563.147-3.444.361-5.613.671-7,1-7,4-7,4h8.5a1.5,1.5,0,0,1,0,3H16v2l-5,5H5l1,3h4L20,41,31,31l8.4-1.778C40,29,41.888,27.331,41,26Z"
+                                        style="fill:#bf7e68;stroke:#4c241d;stroke-linecap:round;stroke-linejoin:round;stroke-width:2px">
+                                    </path>
+                                    <polyline points="27 24 27 27 31 31"
+                                        style="fill:#bf7e68;stroke:#4c241d;stroke-linecap:round;stroke-linejoin:round;stroke-width:2px">
+                                    </polyline>
+                                    <polyline points="20 25 20 30 25.678 35.838"
+                                        style="fill:#bf7e68;stroke:#4c241d;stroke-linecap:round;stroke-linejoin:round;stroke-width:2px">
+                                    </polyline>
+                                </g>
+                            </g>
                         </svg>
                     </div>
                     <h2 class="text-base font-bold">Virtual Zoo ASSAD.</h2>
@@ -198,38 +267,40 @@
                     </h2>
                     <p class="text-text-muted text-sm font-normal">Create your account for CAN 2025 Virtual Zoo</p>
                 </div>
-                <form class="flex flex-col gap-3.5">
+                <form class="flex flex-col gap-3.5" action="./../controllers/register.php" method="POST">
                     <label class="flex flex-col gap-1.5 group">
                         <span class="text-white text-sm font-semibold ml-1">Username</span>
                         <div class="relative">
                             <input
                                 class="w-full bg-surface-dark text-white placeholder-text-muted/50 h-12 rounded-xl border-none focus:ring-2 focus:ring-primary px-4 pl-11 text-sm font-normal transition-all hover:bg-surface-dark/80"
-                                placeholder="SafariExplorer25" type="text" />
+                                placeholder="SafariExplorer25" type="text" name="nom" required />
                             <div
                                 class="absolute inset-y-0 left-3.5 flex items-center pointer-events-none text-text-muted group-focus-within:text-primary transition-colors">
                                 <span class="material-symbols-outlined text-[18px]">person</span>
                             </div>
                         </div>
                     </label>
+                    <p class="text-red-500 text-xs"><?= $errors['name'] ?? '' ?></p>
                     <label class="flex flex-col gap-1.5 group">
                         <span class="text-white text-sm font-semibold ml-1">Email Address</span>
                         <div class="relative">
                             <input
                                 class="w-full bg-surface-dark text-white placeholder-text-muted/50 h-12 rounded-xl border-none focus:ring-2 focus:ring-primary px-4 pl-11 text-sm font-normal transition-all hover:bg-surface-dark/80"
-                                placeholder="you@example.com" type="email" />
+                                placeholder="you@example.com" type="email" name="email" />
                             <div
                                 class="absolute inset-y-0 left-3.5 flex items-center pointer-events-none text-text-muted group-focus-within:text-primary transition-colors">
                                 <span class="material-symbols-outlined text-[18px]">mail</span>
                             </div>
                         </div>
                     </label>
+                    <p class="text-red-500 text-xs"><?= $errors['email'] ?? '' ?></p>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-3.5">
                         <label class="flex flex-col gap-1.5 group">
                             <span class="text-white text-sm font-semibold ml-1">Password</span>
                             <div class="relative">
                                 <input
                                     class="w-full bg-surface-dark text-white placeholder-text-muted/50 h-12 rounded-xl border-none focus:ring-2 focus:ring-primary px-4 pl-11 text-sm font-normal transition-all hover:bg-surface-dark/80"
-                                    placeholder="••••••••" type="password" />
+                                    placeholder="••••••••" type="password" name="password" />
                                 <div
                                     class="absolute inset-y-0 left-3.5 flex items-center pointer-events-none text-text-muted group-focus-within:text-primary transition-colors">
                                     <span class="material-symbols-outlined text-[18px]">lock</span>
@@ -249,6 +320,7 @@
                             </div>
                         </label>
                     </div>
+                        <p class="text-red-500 text-xs"><?= $errors['password'] ?? '' ?></p>
                     <label class="flex items-start gap-2.5 px-1 mt-1 cursor-pointer group">
                         <input
                             class="mt-0.5 rounded border-surface-dark bg-surface-dark text-primary focus:ring-primary focus:ring-offset-background-dark"
@@ -260,7 +332,7 @@
                     </label>
                     <button
                         class="group relative flex w-full cursor-pointer items-center justify-center overflow-hidden rounded-full h-12 bg-primary text-[#111714] text-base font-bold leading-normal tracking-[0.015em] mt-2 hover:shadow-[0_0_20px_rgba(56,224,123,0.3)] transition-all duration-300"
-                        type="button">
+                        type="submit">
                         <span class="truncate z-10">Register Now</span>
                         <div
                             class="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300">
