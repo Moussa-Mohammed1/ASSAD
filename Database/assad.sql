@@ -8,6 +8,7 @@ CREATE TABLE utilisateur(
     email VARCHAR(50),
     `role` VARCHAR(50) DEFAULT 'visiteur',
     isactive BOOLEAN DEFAULT 1,
+    approved BOOLEAN DEFAULT 0,
     motpasse_hash VARCHAR(100)
 );
 
