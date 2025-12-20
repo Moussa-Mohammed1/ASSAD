@@ -1,69 +1,116 @@
 <?php
-    include "./../config.php";
-    session_start();
-    $logged = $_SESSION['loggeduser'] ?? '';
+include "./../config.php";
+session_start();
+$logged = $_SESSION['loggeduser'];
 
-    if(!$logged || $logged['role'] != 'Admin'){header('Location: ./../auth/login.php');exit();}
+if (!$logged) {
+    header('Location: ./../auth/login.php');
+    exit();
+}
 
-    // store habitats
-    $habitats = [];
-    $stmt_habitat = $conn->prepare("SELECT * FROM habitat");
-    $stmt_habitat->execute();
-    $results_habitat = $stmt_habitat->get_result();
+// store habitats
 
-    if ($results_habitat->num_rows > 0) {
-        while ($row = $results_habitat->fetch_assoc()) {
-            $habitats[$row['id_habitat']] = $row;
+$habitats = [];
+$stmt_habitat = $conn->prepare("SELECT * FROM habitat");
+$stmt_habitat->execute();
+$results_habitat = $stmt_habitat->get_result();
+
+if ($results_habitat->num_rows > 0) {
+    while ($row = $results_habitat->fetch_assoc()) {
+        $habitats[$row['id_habitat']] = $row;
+    }
+}
+
+// store habitats
+$animals = [];
+$stmt_animal = $conn->prepare("SELECT a.*, h.nom AS habitat FROM animal a LEFT JOIN habitat h ON a.id_habitat = h.id_habitat");
+$stmt_animal->execute();
+$result_animal = $stmt_animal->get_result();
+
+if ($result_animal->num_rows > 0) {
+    while ($row = $result_animal->fetch_assoc()) {
+        $animals[] = $row;
+    }
+}
+
+// global reach part
+
+// users statistics
+$statement = $conn->prepare('SELECT * FROM utilisateur');
+$statement->execute();
+$result = $statement->get_result();
+$visitors = [];
+$guides = [];
+$pending = [];
+if ($result->num_rows > 0) {
+    while ($row = $result->fetch_assoc()) {
+        if ($row['role'] == 'visiteur') {
+            $visitors[] = $row;
+        }
+        if ($row['approved'] == '0') {
+            $pending[] = $row;
+        }
+        if ($row['role'] == 'guide') {
+            $guides[] = $row;
         }
     }
+}
 
-    // store habitats
-    $animals = [];
-    $stmt_animal = $conn->prepare("SELECT a.*, h.nom FROM animal a LEFT JOIN habitat h ON a.id_habitat = h.id_habitat");
-    $stmt_animal->execute();
-    $result_animal = $stmt_animal->get_result();
+// visites statistic
 
-    if ($result_animal->num_rows > 0) {
-        while ($row = $result_animal->fetch_assoc()) {
-            $animals[] = $row;
+$active_v = [];
+$stmt_visite = $conn->prepare("SELECT * FROM visitesguidees");
+$stmt_visite->execute();
+$resuts_visite = $stmt_visite->get_result();
+if ($resuts_visite->num_rows > 0) {
+    while ($row = $$resuts_visite->fetch_assoc()) {
+        if ($row['status'] == 'ACTIVE') {
+            $active_v[] = $row;
         }
     }
+}
 
-    // users statistics
-    $statement = $conn->prepare('SELECT * FROM utilisateur');
-    $statement->execute();
-    $result = $statement->get_result();
-    $visitors = [];
-    $guides = [];
-    $pending = [];
-    if ($result->num_rows > 0) {
-        while ($row = $result->fetch_assoc()) {
-            if ($row['role'] == 'visiteur') {
-                $visitors[] = $row;
-            }
-            if ($row['approved'] == '0') {
-                $pending[] = $row;
-            }
-            if ($row['role'] == 'guide') {
-                $guides[] = $row;
-            }
-        }
+//retourner tous les visites guidees
+$visites = [];
+$total_visites = $conn->prepare("SELECT * FROM visitesguidees");
+$total_visites->execute();
+$ttlv_result = $total_visites->get_result();
+if ($ttlv_result->num_rows > 0) {
+    while ($row = $ttlv_result->fetch_assoc()) {
+        $visites[] = $row;
     }
+}
+// count the total reservations
+$total_r = [];
+$total_reservation_query = $conn->prepare("SELECT COUNT(*) AS total_reservations FROM reservation");
+$total_reservation_query->execute();
+$total_reservations = $total_reservation_query->get_result();
+if ($total_reservations->num_rows == 1) {
+    $row = $total_reservations->fetch_assoc();
+    $total_r[] = $row;
+}
 
-    // visites statistic
 
-    $active_v = [];
-    $stmt_visite = $conn->prepare("SELECT * FROM visitesguidees");
-    $stmt_visite->execute();
-    $resuts_visite = $stmt_visite->get_result();
-    if ($resuts_visite->num_rows > 0) {
-        while ($row = $$resuts_visite->fetch_assoc()) {
-            if ($row['status'] == 'ACTIVE') {
-                $active_v[] = $row;
-            }
-        }
+
+$top_two_v = $conn->prepare("SELECT 
+                                            v.titre,
+                                            COUNT(r.id_reservation) AS total_reservations
+                                        FROM visitesguidees v
+                                        LEFT JOIN reservation r ON v.id_visite = r.id_visite
+                                        GROUP BY v.id_visite, v.titre
+                                        ORDER BY total_reservations DESC
+                                        LIMIT 2
+                                        ");
+$top_two_v->execute();
+$topvisites = [];
+$the_top_two_result = $top_two_v->get_result();
+if ($the_top_two_result->num_rows > 0) {
+    while ($row = $the_top_two->fetch_assoc()) {
+        $topvisites[] = $row;
     }
-    
+}
+
+
 ?>
 
 <!DOCTYPE html>
@@ -243,15 +290,27 @@
         </nav>
         <div class="p-4 border-t border-[#28392e]">
             <div
-                class="flex items-center gap-3 p-2 rounded-lg bg-surface-dark/50 hover:bg-surface-dark cursor-pointer transition-colors">
-                <div class="bg-center bg-no-repeat bg-cover rounded-full h-8 w-8"
+                class="flex items-center gap-3 p-2 rounded-lg bg-surface-dark/50 hover:bg-surface-dark transition-colors group">
+                <div class="bg-center bg-no-repeat bg-cover rounded-full h-8 w-8 shrink-0"
                     data-alt="Profile picture of the admin user"
                     style='background-image: url("https://avatars.githubusercontent.com/u/209652052?v=4");'>
                 </div>
-                <div class="flex flex-col">
-                    <p class="text-white text-xs font-bold"><?=$logged['nom']?></p>
-                    <p class="text-[#9db9a6] text-[10px]"><?= $logged['nom']?>@assad.zoo</p>
+
+                <div class="flex flex-col flex-1 min-w-0">
+                    <p class="text-white text-xs font-bold truncate"><?= $logged['nom'] ?></p>
+                    <p class="text-[#9db9a6] text-[10px] truncate"><?= $logged['email'] ?></p>
                 </div>
+                <a href="./../logout.php">
+                    <button onclick="location.href='logout.php'"
+                        class="p-1.5 rounded-md text-[#9db9a6] hover:text-red-400 hover:bg-red-400/10 transition-all"
+                        title="Logout">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                            <polyline points="16 17 21 12 16 7"></polyline>
+                            <line x1="21" y1="12" x2="9" y2="12"></line>
+                        </svg>
+                    </button></a>
             </div>
         </div>
     </aside>
@@ -272,17 +331,17 @@
                     <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-[#9db9a6]">
                         <span class="material-symbols-outlined">search</span>
                     </div>
-                    <input
+                    <input id="admin-search"
                         class="block w-full pl-10 pr-3 py-2 border-none rounded-lg leading-5 bg-surface-dark text-white placeholder-[#9db9a6] focus:outline-none focus:ring-1 focus:ring-primary sm:text-sm transition-all"
                         placeholder="Search animals, users, tours..." type="text" />
                 </div>
-                
+
             </div>
         </header>
         <div class="flex-1 overflow-y-auto p-4 md:p-8 scroll-smooth">
             <div class="max-w-7xl mx-auto flex flex-col gap-8">
                 <div>
-                    <h2 class="text-white text-2xl font-bold">Welcome back, <?= $logged['nom']?> 👋</h2>
+                    <h2 class="text-white text-2xl font-bold">Welcome back, <?= $logged['nom'] ?> 👋</h2>
                     <p class="text-[#9db9a6] mt-1">Here is what is happening with CAN 2025 Virtual Zoo today.</p>
                 </div>
                 <script src="/ASSAD/assets/js/preloader.js" defer></script>
@@ -297,7 +356,7 @@
                                 class="text-[#0bda43] text-xs font-bold bg-[#0bda43]/10 px-2 py-1 rounded-full">+12%</span>
                         </div>
                         <p class="text-[#9db9a6] text-sm font-medium">Total Visitors</p>
-                        <p class="text-white text-3xl font-bold mt-1"><?=count($visitors)?></p>
+                        <p class="text-white text-3xl font-bold mt-1"><?= count($visitors) ?></p>
                     </div>
                     <div
                         class="flex flex-col p-5 bg-surface-dark rounded-xl border border-white/5 hover:border-primary/30 transition-colors shadow-sm">
@@ -309,7 +368,7 @@
                                 class="text-[#0bda43] text-xs font-bold bg-[#0bda43]/10 px-2 py-1 rounded-full">+2%</span>
                         </div>
                         <p class="text-[#9db9a6] text-sm font-medium">Total Animals</p>
-                        <p class="text-white text-3xl font-bold mt-1"><?=count($animals)?></p>
+                        <p class="text-white text-3xl font-bold mt-1"><?= count($animals) ?></p>
                     </div>
                     <div
                         class="flex flex-col p-5 bg-surface-dark rounded-xl border border-white/5 hover:border-primary/30 transition-colors shadow-sm">
@@ -322,7 +381,7 @@
                                 Req.</span>
                         </div>
                         <p class="text-[#9db9a6] text-sm font-medium">Pending Approvals</p>
-                        <p class="text-white text-3xl font-bold mt-1"><?=count($pending)?></p>
+                        <p class="text-white text-3xl font-bold mt-1"><?= count($pending) ?></p>
                     </div>
                     <div
                         class="flex flex-col p-5 bg-surface-dark rounded-xl border border-white/5 hover:border-primary/30 transition-colors shadow-sm">
@@ -334,300 +393,208 @@
                                 class="text-[#9db9a6] text-xs font-bold bg-white/5 px-2 py-1 rounded-full">Stable</span>
                         </div>
                         <p class="text-[#9db9a6] text-sm font-medium">Active Tours</p>
-                        <p class="text-white text-3xl font-bold mt-1"><?= count($active_v)?></p>
+                        <p class="text-white text-3xl font-bold mt-1"><?= count($active_v) ?? '0' ?></p>
                     </div>
                 </div>
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    <div class="lg:col-span-2 bg-surface-dark rounded-xl border border-white/5 p-6 flex flex-col">
-                        <div class="flex justify-between items-center mb-6">
+                <!-- GLOBAL REACH + MOST VIEWED ANIMALS -->
+                <!-- <div class="flex flex-col lg:flex-row gap-6">
+
+                    <div class="bg-surface-dark rounded-xl border border-white/5 p-6
+                flex flex-col
+                lg:w-[60%]
+                max-h-[420px] overflow-y-auto">
+
+                        <div class="flex justify-between items-center mb-6 shrink-0">
                             <h3 class="text-white text-lg font-bold">Global Reach</h3>
-                            <button class="text-sm text-primary hover:text-white transition-colors">View Report</button>
+                            <button class="text-sm text-primary hover:text-white transition-colors">
+                                View Report
+                            </button>
                         </div>
-                        <div class="flex flex-col md:flex-row gap-6 h-full">
-                            <div class="flex-1 rounded-lg overflow-hidden relative group">
-                                <div class="w-full h-64 md:h-full bg-cover bg-center opacity-80 group-hover:opacity-100 transition-opacity"
-                                    data-alt="World map highlighting African regions with visitor hotspots"
-                                    data-location="Africa"
-                                    style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBac-1izIUX6E_GnUXLU6jprqzPCUbIk_VTdXm_rUqyaKNFbn_lnWwI-7Y16F0Uge6wdR6Ar5KzSXiAVN_jCqGZHnMzB4ga8TCr7Nslx8-YD5s3CzFJhwdfbU9BQRKV2u2U4oBHgHmFmaNV1xivsM6ppRBrYMIW-p_YgX84VM_pc2XWmJAL2-uQ2-td6_qemR_5kEAjloPJo1l2XNOQP28OGo45Eche5U81pzdNGsPBhTonVFh56fPnjvt0XW8Y9HN_8LfPsKM0WY13");'>
-                                    <div class="absolute inset-0 bg-gradient-to-t from-surface-dark to-transparent">
-                                    </div>
+
+                        <div class="space-y-4">
+
+                            <div class="space-y-1">
+                                <div class="flex justify-between text-sm">
+                                    <span class="text-white">Ivory Coast</span>
+                                    <span class="text-primary font-bold">45%</span>
                                 </div>
-                                <div class="absolute bottom-4 left-4">
-                                    <div class="flex items-center gap-2">
-                                        <span class="material-symbols-outlined text-primary">public</span>
-                                        <span class="text-white font-medium text-sm">Real-time Activity</span>
-                                    </div>
+                                <div class="h-2 w-full bg-white/5 rounded-full overflow-hidden">
+                                    <div class="h-full bg-primary w-[45%] rounded-full"></div>
                                 </div>
                             </div>
-                            <div class="w-full md:w-64 flex flex-col justify-center gap-4">
-                                <div class="space-y-1">
-                                    <div class="flex justify-between text-sm">
-                                        <span class="text-white">Ivory Coast</span>
-                                        <span class="text-primary font-bold">45%</span>
-                                    </div>
-                                    <div class="h-2 w-full bg-white/5 rounded-full overflow-hidden">
-                                        <div class="h-full bg-primary w-[45%] rounded-full"></div>
-                                    </div>
+
+
+                            <div class="space-y-1">
+                                <div class="flex justify-between text-sm">
+                                    <span class="text-white">Cameroon</span>
+                                    <span class="text-[#9db9a6]">24%</span>
                                 </div>
-                                <div class="space-y-1">
-                                    <div class="flex justify-between text-sm">
-                                        <span class="text-white">Cameroon</span>
-                                        <span class="text-[#9db9a6]">24%</span>
-                                    </div>
-                                    <div class="h-2 w-full bg-white/5 rounded-full overflow-hidden">
-                                        <div class="h-full bg-[#9db9a6] w-[24%] rounded-full"></div>
-                                    </div>
+                                <div class="h-2 w-full bg-white/5 rounded-full overflow-hidden">
+                                    <div class="h-full bg-[#9db9a6] w-[24%] rounded-full"></div>
                                 </div>
-                                <div class="space-y-1">
-                                    <div class="flex justify-between text-sm">
-                                        <span class="text-white">Senegal</span>
-                                        <span class="text-[#9db9a6]">18%</span>
-                                    </div>
-                                    <div class="h-2 w-full bg-white/5 rounded-full overflow-hidden">
-                                        <div class="h-full bg-[#9db9a6] w-[18%] rounded-full"></div>
-                                    </div>
+                            </div>
+
+
+                            <div class="space-y-1">
+                                <div class="flex justify-between text-sm">
+                                    <span class="text-white">Senegal</span>
+                                    <span class="text-[#9db9a6]">18%</span>
                                 </div>
-                                <div class="space-y-1">
-                                    <div class="flex justify-between text-sm">
-                                        <span class="text-white">France</span>
-                                        <span class="text-[#9db9a6]">8%</span>
-                                    </div>
-                                    <div class="h-2 w-full bg-white/5 rounded-full overflow-hidden">
-                                        <div class="h-full bg-[#9db9a6] w-[8%] rounded-full"></div>
-                                    </div>
+                                <div class="h-2 w-full bg-white/5 rounded-full overflow-hidden">
+                                    <div class="h-full bg-[#9db9a6] w-[18%] rounded-full"></div>
                                 </div>
-                                <div class="space-y-1">
-                                    <div class="flex justify-between text-sm">
-                                        <span class="text-white">Other</span>
-                                        <span class="text-[#9db9a6]">5%</span>
-                                    </div>
-                                    <div class="h-2 w-full bg-white/5 rounded-full overflow-hidden">
-                                        <div class="h-full bg-[#9db9a6] w-[5%] rounded-full"></div>
-                                    </div>
+                            </div>
+
+
+                            <div class="space-y-1">
+                                <div class="flex justify-between text-sm">
+                                    <span class="text-white">France</span>
+                                    <span class="text-[#9db9a6]">8%</span>
+                                </div>
+                                <div class="h-2 w-full bg-white/5 rounded-full overflow-hidden">
+                                    <div class="h-full bg-[#9db9a6] w-[8%] rounded-full"></div>
+                                </div>
+                            </div>
+
+
+                            <div class="space-y-1">
+                                <div class="flex justify-between text-sm">
+                                    <span class="text-white">Other</span>
+                                    <span class="text-[#9db9a6]">5%</span>
+                                </div>
+                                <div class="h-2 w-full bg-white/5 rounded-full overflow-hidden">
+                                    <div class="h-full bg-[#9db9a6] w-[5%] rounded-full"></div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                    <div class="bg-surface-dark rounded-xl border border-white/5 p-6 flex flex-col">
-                        <h3 class="text-white text-lg font-bold mb-6">Most Viewed Animals</h3>
-                        <div class="flex flex-col gap-4 flex-1">
+
+                    <!-- MOST VIEWED ANIMALS (40%) -->
+                <div class="bg-surface-dark rounded-xl border border-white/5 p-6
+                flex flex-col
+                
+                max-h-[420px] overflow-hidden">
+
+                    <h3 class="text-white text-lg font-bold mb-6 shrink-0">
+                        Most Viewed Animals
+                    </h3>
+
+                    <!-- Scrollable list -->
+                    <div class="flex flex-col gap-4 overflow-y-auto flex-1 pr-1">
+
+                        <?php foreach ($animals as $animal): ?>
                             <div class="flex items-center gap-4 group cursor-pointer">
                                 <div class="h-12 w-12 rounded-lg bg-cover bg-center shrink-0"
-                                    data-alt="Close up of a majestic lion"
-                                    style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCBN31E-LnMXibKOxw-5VyATd4Ac25sT9zyd1hccmY6RDxSfeiMrYUDVmgQZEsT6CemdFlOXAsjSRxifHqf_wH-90cIEhpR-n847Fz6JeQ8Za1bVEaCWTPbgZTMW2O7lY-29MBE0w73DMOoggjmS3LU61NenV4On70bkN0f3JYaJpcvnBPUm25l3CrwoZBeUc9ietV-1YNGbuFMXQJSvN-b8T09hw6BWKXY_DzWQAzziEs2sJu_mtTwH_0VgxoEsrjpldMjzkc3nCcl");'>
+                                    style='background-image: url("<?= $animal['image'] ?>");'>
                                 </div>
+
                                 <div class="flex-1">
                                     <div class="flex justify-between mb-1">
                                         <span
-                                            class="text-white text-sm font-medium group-hover:text-primary transition-colors">African
-                                            Lion</span>
-                                        <span class="text-[#9db9a6] text-xs">2.4k views</span>
+                                            class="text-white text-sm font-medium group-hover:text-primary transition-colors">
+                                            <?= $animal['nom'] ?>
+                                        </span>
+                                        <span class="text-[#9db9a6] text-xs">
+                                            <?= $animal['visites'] ?> views
+                                        </span>
                                     </div>
+
                                     <div class="h-1.5 w-full bg-white/5 rounded-full">
                                         <div class="h-full bg-primary w-[85%] rounded-full"></div>
                                     </div>
                                 </div>
                             </div>
-                            <div class="flex items-center gap-4 group cursor-pointer">
-                                <div class="h-12 w-12 rounded-lg bg-cover bg-center shrink-0"
-                                    data-alt="Elephant walking in savannah"
-                                    style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBpKMFxyrxGaawgQIKy0d09AWsusaT1tuJt6UGTSxEGbrx6wdj5VxA9PkzGfFWau4dMq3P0oDS5ga3L-OCProEcam58LoR-9UBjzVKxjqaIplYSLNdoi7rM14JXs3kYKbNQaGhpq-Y0wZLqPVpJuUC5UEYXUpoEj3KHntC51SHuRx7oZv4d7DqqA31XjENRyVeQC21ORqwmYDj7b96KE3uPwgFf_A-zYTJafR6ZGghGlpdeOd4YN1hf7niAn8Clz9cTgrEDNC_NwTy8");'>
-                                </div>
-                                <div class="flex-1">
-                                    <div class="flex justify-between mb-1">
-                                        <span
-                                            class="text-white text-sm font-medium group-hover:text-primary transition-colors">Elephant</span>
-                                        <span class="text-[#9db9a6] text-xs">1.8k views</span>
-                                    </div>
-                                    <div class="h-1.5 w-full bg-white/5 rounded-full">
-                                        <div class="h-full bg-[#9db9a6] w-[70%] rounded-full"></div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="flex items-center gap-4 group cursor-pointer">
-                                <div class="h-12 w-12 rounded-lg bg-cover bg-center shrink-0"
-                                    data-alt="Giraffe neck and head"
-                                    style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBXYr6bkHu7Nqeo36wN2p1Is7uri7_WfHmgeaU1TDHpIDyBqRafqLqPvCTE75RDKjO7ZZaO3XBrUT9QSAco1sBdjqMeVDrsLAxqlKn9Dc6NmkI4SajI00Lui76emH3L2oyTPW1HEjEGSpzn8BVkX2QdxquIA_Pn6DZdiayVg01rq_3WobpJPGZvHqh0f0m2GJ6HHr4v_l3wIVLMrAvll9O2wOkuxizrrqWzTttQdMemDrNLp4q3TvqE43Xjd2EP0iCDvrZCfhQR7mSV");'>
-                                </div>
-                                <div class="flex-1">
-                                    <div class="flex justify-between mb-1">
-                                        <span
-                                            class="text-white text-sm font-medium group-hover:text-primary transition-colors">Giraffe</span>
-                                        <span class="text-[#9db9a6] text-xs">1.2k views</span>
-                                    </div>
-                                    <div class="h-1.5 w-full bg-white/5 rounded-full">
-                                        <div class="h-full bg-[#9db9a6] w-[50%] rounded-full"></div>
-                                    </div>
-                                </div>
-                            </div>
-                            <button
-                                class="mt-auto w-full py-2.5 rounded-lg border border-white/10 text-[#9db9a6] text-sm hover:text-white hover;border-white/30 hover:bg-white/5 transition-all">
-                                Manage Animals
-                            </button>
-                        </div>
+                        <?php endforeach; ?>
+
+                    </div>
+
+
+                    <a href="/ASSAD/admin/animals/animals.php"
+                        class="mt-4 w-full py-2.5 rounded-lg border border-white/10
+                                                                        text-[#9db9a6] text-sm text-center
+                                                                        hover:text-white hover:border-white/30 hover:bg-white/5 transition-all">
+                        Manage Animals
+                    </a>
+
+                </div>
+
+            </div>
+            <div class="h-4"></div>
+
+            <div class="bg-surface-dark rounded-xl border border-white/5 p-6 flex flex-col">
+                <h3 class="text-white text-lg font-bold mb-6">Reservation Stats</h3>
+
+                <!-- Top summary boxes -->
+                <div class="grid grid-cols-3 gap-4 mb-6">
+                    <div class="bg-[#1f2a33] rounded-lg p-4 flex flex-col items-center">
+                        <span class="text-xs text-[#9db9a6]">Total Visits</span>
+                        <span class="text-2xl font-bold text-white"><?= count($visites) ?? '0' ?></span>
+                    </div>
+                    <div class="bg-[#1f2a33] rounded-lg p-4 flex flex-col items-center">
+                        <span class="text-xs text-[#9db9a6]">Bookings Today</span>
+                        <span class="text-2xl font-bold text-white"><?= $total_r['total_reservations'] ?? '0' ?></span>
+                    </div>
+                    <div class="bg-[#1f2a33] rounded-lg p-4 flex flex-col items-center">
+                        <span class="text-xs text-[#9db9a6]">Pending</span>
+                        <span class="text-2xl font-bold text-white">
+                            <?php
+                            $counter = 0;
+                            if ($visites) {
+                                foreach ($visites as $visit) {
+                                    if ($visit['status'] == 'OFFLINE') {
+                                        $counter++;
+                                    }
+                                }
+                                echo $counter;
+                                $counter = 0;
+                            } else {
+                                $counter = 0;
+                                echo $counter;
+                            }
+                            ?>
+                        </span>
                     </div>
                 </div>
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 pb-6">
-                    <div
-                        class="lg:col-span-2 bg-surface-dark rounded-xl border border-white/5 overflow-hidden flex flex-col">
-                        <div class="p-6 border-b border-white/5 flex justify-between items-center">
-                            <div>
-                                <h3 class="text-white text-lg font-bold">New Registrations</h3>
-                                <p class="text-[#9db9a6] text-sm">Users waiting for account approval</p>
+
+                <!-- Horizontal bar chart -->
+                <div class="flex flex-col gap-4">
+                    <?php if ($topvisites): ?>
+                        <?php foreach ($topvisites as $visit): ?>
+                            <div class="flex items-center justify-between">
+                                <span class="text-sm text-[#9db9a6]<?= !$percent ? '' : '/20' ?>"><?= $visit['titre'] ?></span>
+                                <span class="text-white font-bold text-sm">
+                                    <?php
+                                    $percent = null;
+                                    if ($total_r && $visit) {
+                                        $percent = ($visit['total_reservations'] / $total_r['total_reservations']) * 100;
+                                        echo $percent;
+                                    }
+                                    ?>
+                                </span>
                             </div>
-                            <button
-                                class="bg-primary/10 text-primary text-sm font-bold px-4 py-2 rounded-lg hover:bg-primary hover:text-black transition-colors">
-                                View All
-                            </button>
-                        </div>
-                        <div class="overflow-x-auto">
-                            <table class="w-full text-left border-collapse">
-                                <thead class="bg-black/20 text-[#9db9a6] text-xs uppercase font-medium">
-                                    <tr>
-                                        <th class="px-6 py-4">User</th>
-                                        <th class="px-6 py-4">Country</th>
-                                        <th class="px-6 py-4">Date</th>
-                                        <th class="px-6 py-4 text-right">Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody class="divide-y divide-white/5">
-                                    <tr class="group hover:bg-white/5 transition-colors">
-                                        <td class="px-6 py-4">
-                                            <div class="flex items-center gap-3">
-                                                <div
-                                                    class="h-8 w-8 rounded-full bg-gradient-to-tr from-blue-500 to-purple-500 flex items-center justify-center text-white font-bold text-xs">
-                                                    JD</div>
-                                                <div>
-                                                    <p class="text-white text-sm font-medium">Jean Dubois</p>
-                                                    <p class="text-[#9db9a6] text-xs">jean.d@example.com</p>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td class="px-6 py-4 text-[#9db9a6] text-sm">Ivory Coast</td>
-                                        <td class="px-6 py-4 text-[#9db9a6] text-sm">Oct 24, 2024</td>
-                                        <td class="px-6 py-4 text-right">
-                                            <div
-                                                class="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                <button
-                                                    class="p-1.5 rounded bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white transition-colors"
-                                                    title="Deny">
-                                                    <span class="material-symbols-outlined text-[18px]">close</span>
-                                                </button>
-                                                <button
-                                                    class="p-1.5 rounded bg-primary text-black hover:bg-white transition-colors shadow-lg shadow-primary/20"
-                                                    title="Approve">
-                                                    <span class="material-symbols-outlined text-[18px]">check</span>
-                                                </button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                    <tr class="group hover:bg-white/5 transition-colors">
-                                        <td class="px-6 py-4">
-                                            <div class="flex items-center gap-3">
-                                                <div
-                                                    class="h-8 w-8 rounded-full bg-gradient-to-tr from-orange-500 to-red-500 flex items-center justify-center text-white font-bold text-xs">
-                                                    AM</div>
-                                                <div>
-                                                    <p class="text-white text-sm font-medium">Aminata Mbaye</p>
-                                                    <p class="text-[#9db9a6] text-xs">aminata.m@example.com</p>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td class="px-6 py-4 text-[#9db9a6] text-sm">Senegal</td>
-                                        <td class="px-6 py-4 text-[#9db9a6] text-sm">Oct 23, 2024</td>
-                                        <td class="px-6 py-4 text-right">
-                                            <div
-                                                class="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                <button
-                                                    class="p-1.5 rounded bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white transition-colors">
-                                                    <span class="material-symbols-outlined text-[18px]">close</span>
-                                                </button>
-                                                <button
-                                                    class="p-1.5 rounded bg-primary text-black hover:bg-white transition-colors shadow-lg shadow-primary/20">
-                                                    <span class="material-symbols-outlined text-[18px]">check</span>
-                                                </button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                    <tr class="group hover:bg-white/5 transition-colors">
-                                        <td class="px-6 py-4">
-                                            <div class="flex items-center gap-3">
-                                                <div
-                                                    class="h-8 w-8 rounded-full bg-gradient-to-tr from-green-500 to-teal-500 flex items-center justify-center text-white font-bold text-xs">
-                                                    KO</div>
-                                                <div>
-                                                    <p class="text-white text-sm font-medium">Kofi Osei</p>
-                                                    <p class="text-[#9db9a6] text-xs">k.osei@example.com</p>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td class="px-6 py-4 text-[#9db9a6] text-sm">Ghana</td>
-                                        <td class="px-6 py-4 text-[#9db9a6] text-sm">Oct 23, 2024</td>
-                                        <td class="px-6 py-4 text-right">
-                                            <div
-                                                class="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                <button
-                                                    class="p-1.5 rounded bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white transition-colors">
-                                                    <span class="material-symbols-outlined text-[18px]">close</span>
-                                                </button>
-                                                <button
-                                                    class="p-1.5 rounded bg-primary text-black hover:bg-white transition-colors shadow-lg shadow-primary/20">
-                                                    <span class="material-symbols-outlined text-[18px]">check</span>
-                                                </button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
+                            <div class="w-full bg-[#9db9a6]/20 rounded-full h-3">
+                                <div class="bg-primary h-3 rounded-full w-[<?= $percent ?>%]"></div>
+                            </div>
+
+                        <?php endforeach; ?>
+                    <?php endif; ?>
+
+                    <div class="flex items-center justify-between">
+                        <span class="text-sm text-[#9db9a6]">Others</span>
+
+                        <span
+                            class="text-white font-bold text-sm"><?= isset($percent) ? (100 - $percent) . '%' : '0%' ?></span>
+
                     </div>
-                    <div class="bg-surface-dark rounded-xl border border-white/5 p-6 flex flex-col">
-                        <h3 class="text-white text-lg font-bold mb-6">Popular Tours</h3>
-                        <div class="flex-1 flex flex-col justify-center items-center relative min-h-[200px]">
-                            <div
-                                class="relative w-48 h-48 rounded-full border-[16px] border-[#9db9a6]/20 flex items-center justify-center">
-                                <svg class="w-full h-full -rotate-90" viewbox="0 0 36 36">
-                                    <path class="text-primary"
-                                        d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                                        fill="none" stroke="currentColor" stroke-dasharray="60, 100" stroke-width="3">
-                                    </path>
-                                    <path class="text-blue-500"
-                                        d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                                        fill="none" stroke="currentColor" stroke-dasharray="25, 100"
-                                        stroke-dashoffset="-60" stroke-width="3"></path>
-                                </svg>
-                                <div class="absolute inset-0 flex flex-col items-center justify-center">
-                                    <span class="text-3xl font-bold text-white">1,240</span>
-                                    <span class="text-xs text-[#9db9a6]">Bookings</span>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="mt-6 flex flex-col gap-3">
-                            <div class="flex items-center justify-between">
-                                <div class="flex items-center gap-2">
-                                    <span class="h-3 w-3 rounded-full bg-primary"></span>
-                                    <span class="text-sm text-[#9db9a6]">Savannah Safari</span>
-                                </div>
-                                <span class="text-white font-bold text-sm">60%</span>
-                            </div>
-                            <div class="flex items-center justify-between">
-                                <div class="flex items-center gap-2">
-                                    <span class="h-3 w-3 rounded-full bg-blue-500"></span>
-                                    <span class="text-sm text-[#9db9a6]">Rainforest Trek</span>
-                                </div>
-                                <span class="text-white font-bold text-sm">25%</span>
-                            </div>
-                            <div class="flex items-center justify-between">
-                                <div class="flex items-center gap-2">
-                                    <span class="h-3 w-3 rounded-full bg-[#9db9a6]/20"></span>
-                                    <span class="text-sm text-[#9db9a6]">Others</span>
-                                </div>
-                                <span class="text-white font-bold text-sm">15%</span>
-                            </div>
+
+                    <div class="w-full bg-[#9db9a6]/20 rounded-full h-3">
+                        <div class="bg-[#9db9a6]/20 h-3 rounded-full w-[<?= isset($percent) ? (100 - $percent) : '0' ?>%]">
                         </div>
                     </div>
                 </div>
             </div>
+        </div>
+        </div>
         </div>
     </main>
 </body>
