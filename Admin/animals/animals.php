@@ -1,3 +1,27 @@
+<?php
+include "./../../config.php";
+session_start();
+
+$habitat_stmt = $conn->prepare("SELECT id_habitat, nom FROM habitat ORDER BY nom ASC");
+$habitat_stmt->execute();
+$results = $habitat_stmt->get_result();
+
+
+$habitats_filter_stmt = $conn->prepare("SELECT nom FROM habitat ORDER BY nom ASC");
+$habitats_filter_stmt->execute();
+$habitats_filter_result = $habitats_filter_stmt->get_result();
+$query = "SELECT a.*, h.nom as habitat_name 
+              FROM animal a 
+              LEFT JOIN habitat h ON a.id_habitat = h.id_habitat 
+              ORDER BY a.id_animal DESC";
+
+$animals_stmt = $conn->prepare($query);
+$animals_stmt->execute();
+$animals_result = $animals_stmt->get_result();
+
+$total_animals = $animals_result->num_rows;
+?>
+
 <!DOCTYPE html>
 <html class="dark" lang="en">
 
@@ -171,16 +195,28 @@
         </nav>
         <div class="p-4 border-t border-[#28392e]">
             <div
-                class="flex items-center gap-3 p-2 rounded-lg bg-surface-dark/50 hover:bg-surface-dark cursor-pointer transition-colors">
+                class="flex items-center gap-3 p-2 rounded-lg bg-surface-dark/50 hover:bg-surface-dark transition-colors group">
                 <div class="bg-center bg-no-repeat bg-cover rounded-full h-8 w-8"
                     data-alt="Profile picture of the admin user"
                     style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBKhw_hzdz9yoEDpYxdcLkdxEJGsxOm2FEwVJBj3LZ3rAHeY5Na3uNzpt1VCN2GyQBN348ClzgctgUQ-LE70ebh8ZQjAs_HoEo4FEtphuLmCmkcA7JesvqP3r1jVV8GeyA6okkfHYepeQfbA3Qe6m1IugrAfH6-vtFQ5mzPs2dXMklDDx-_iH6M7itv4BWiqejYaxS0OoH6qe4wrtIZbPEFPc_0t1T2Fv4JSw6cTlz5IFbJFjUnOp6NnfYaWOHEe-Gw5oGwkgUV-RUO");'>
                     <script src="/ASSAD/assets/js/preloader.js" defer></script>
                 </div>
-                <div class="flex flex-col">
-                    <p class="text-white text-xs font-bold">Admin User</p>
-                    <p class="text-[#9db9a6] text-[10px]">admin@assad.zoo</p>
+                <div class="flex flex-col flex-1 min-w-0">
+                    <p class="text-white text-xs font-bold truncate">Admin User</p>
+                    <p class="text-[#9db9a6] text-[10px] truncate">admin@assad.zoo</p>
                 </div>
+                <a href="/ASSAD/logout.php">
+                    <button
+                        class="p-1.5 rounded-md text-[#9db9a6] hover:text-red-400 hover:bg-red-400/10 transition-all"
+                        title="Logout">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                            <polyline points="16 17 21 12 16 7"></polyline>
+                            <line x1="21" y1="12" x2="9" y2="12"></line>
+                        </svg>
+                    </button>
+                </a>
             </div>
         </div>
     </aside>
@@ -232,14 +268,14 @@
                             <select
                                 class="pl-10 pr-8 py-2 bg-surface-dark border border-white/10 rounded-lg text-sm text-white focus:ring-1 focus:ring-primary focus:border-primary cursor-pointer appearance-none">
                                 <option>All Habitats</option>
-                                <option>Savanna</option>
-                                <option>Rainforest</option>
-                                <option>Wetlands</option>
+                                <?php while ($h = $habitats_filter_result->fetch_assoc()): ?>
+                                    <option value="<?= htmlspecialchars($h['nom']) ?>"><?= htmlspecialchars($h['nom']) ?>
+                                    </option>
+                                <?php endwhile; ?>
                             </select>
                         </div>
                         <div class="text-sm text-[#9db9a6]">
-                            Showing <span class="text-white font-bold">3</span> of <span
-                                class="text-white font-bold">85</span> animals
+                            Showing <span class="text-white font-bold"><?= $total_animals ?></span> animals
                         </div>
                     </div>
                     <div class="relative w-full sm:w-64">
@@ -250,266 +286,200 @@
                             class="material-symbols-outlined absolute right-3 top-2.5 text-[#5a6b60] text-[18px]">search</span>
                     </div>
                 </div>
+
                 <div class="flex-1 overflow-y-auto p-6">
                     <div class="grid grid-cols-1 xl:grid-cols-2 gap-4">
-                        <div
-                            class="bg-surface-dark rounded-xl border border-white/5 p-4 flex gap-4 group hover:border-primary/30 transition-all">
-                            <div class="w-24 h-24 sm:w-32 sm:h-32 rounded-lg bg-cover bg-center shrink-0"
-                                style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCBN31E-LnMXibKOxw-5VyATd4Ac25sT9zyd1hccmY6RDxSfeiMrYUDVmgQZEsT6CemdFlOXAsjSRxifHqf_wH-90cIEhpR-n847Fz6JeQ8Za1bVEaCWTPbgZTMW2O7lY-29MBE0w73DMOoggjmS3LU61NenV4On70bkN0f3JYaJpcvnBPUm25l3CrwoZBeUc9ietV-1YNGbuFMXQJSvN-b8T09hw6BWKXY_DzWQAzziEs2sJu_mtTwH_0VgxoEsrjpldMjzkc3nCcl");'>
-                            </div>
-                            <div class="flex-1 flex flex-col">
-                                <div class="flex justify-between items-start">
-                                    <div>
-                                        <h3 class="text-white font-bold text-lg">African Lion</h3>
-                                        <p class="text-[#9db9a6] text-xs italic">Panthera leo</p>
+
+                        <?php if ($animals_result->num_rows > 0): ?>
+                            <?php while ($animal = $animals_result->fetch_assoc()): ?>
+                                <div
+                                    class="bg-surface-dark rounded-xl border border-white/5 p-4 flex gap-4 group hover:border-primary/30 transition-all">
+                                    <div class="w-24 h-24 sm:w-32 sm:h-32 rounded-lg bg-cover bg-center shrink-0 border border-white/5"
+                                        style='background-image: url("<?= htmlspecialchars($animal['image']) ?>");'>
                                     </div>
-                                    <div
-                                        class="px-2 py-1 rounded bg-[#11d452]/10 border border-[#11d452]/20 text-[#11d452] text-[10px] uppercase font-bold tracking-wide">
-                                        Savanna
-                                    </div>
-                                </div>
-                                <p class="mt-2 text-[#9db9a6] text-sm line-clamp-2">
-                                    The king of the beasts, known for its majestic mane and powerful roar. A key
-                                    attraction for virtual safari tours.
-                                </p>
-                                <div class="mt-auto pt-3 flex items-center justify-between border-t border-white/5">
-                                    <div class="flex items-center gap-2">
-                                        <span class="w-2 h-2 rounded-full bg-green-500"></span>
-                                        <span class="text-xs text-[#9db9a6]">Active</span>
-                                    </div>
-                                    <div class="flex gap-1">
-                                        <button
-                                            class="p-1.5 text-[#9db9a6] hover:text-white hover:bg-white/10 rounded transition-colors"
-                                            title="View Details">
-                                            <span class="material-symbols-outlined text-[18px]">visibility</span>
-                                        </button>
-                                        <button class="p-1.5 text-primary hover:bg-primary/10 rounded transition-colors"
-                                            title="Edit">
-                                            <span class="material-symbols-outlined text-[18px]">edit</span>
-                                        </button>
-                                        <button
-                                            class="p-1.5 text-red-400 hover:text-red-300 hover:bg-red-400/10 rounded transition-colors"
-                                            title="Delete">
-                                            <span class="material-symbols-outlined text-[18px]">delete</span>
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div
-                            class="bg-surface-dark rounded-xl border border-white/5 p-4 flex gap-4 group hover:border-primary/30 transition-all">
-                            <div class="w-24 h-24 sm:w-32 sm:h-32 rounded-lg bg-cover bg-center shrink-0"
-                                style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBpKMFxyrxGaawgQIKy0d09AWsusaT1tuJt6UGTSxEGbrx6wdj5VxA9PkzGfFWau4dMq3P0oDS5ga3L-OCProEcam58LoR-9UBjzVKxjqaIplYSLNdoi7rM14JXs3kYKbNQaGhpq-Y0wZLqPVpJuUC5UEYXUpoEj3KHntC51SHuRx7oZv4d7DqqA31XjENRyVeQC21ORqwmYDj7b96KE3uPwgFf_A-zYTJafR6ZGghGlpdeOd4YN1hf7niAn8Clz9cTgrEDNC_NwTy8");'>
-                            </div>
-                            <div class="flex-1 flex flex-col">
-                                <div class="flex justify-between items-start">
-                                    <div>
-                                        <h3 class="text-white font-bold text-lg">African Elephant</h3>
-                                        <p class="text-[#9db9a6] text-xs italic">Loxodonta africana</p>
-                                    </div>
-                                    <div
-                                        class="px-2 py-1 rounded bg-[#11d452]/10 border border-[#11d452]/20 text-[#11d452] text-[10px] uppercase font-bold tracking-wide">
-                                        Savanna
-                                    </div>
-                                </div>
-                                <p class="mt-2 text-[#9db9a6] text-sm line-clamp-2">
-                                    The largest living land animal. Highly intelligent and social, forming complex
-                                    matriarchal groups.
-                                </p>
-                                <div class="mt-auto pt-3 flex items-center justify-between border-t border-white/5">
-                                    <div class="flex items-center gap-2">
-                                        <span class="w-2 h-2 rounded-full bg-green-500"></span>
-                                        <span class="text-xs text-[#9db9a6]">Active</span>
-                                    </div>
-                                    <div class="flex gap-1">
-                                        <button
-                                            class="p-1.5 text-[#9db9a6] hover:text-white hover:bg-white/10 rounded transition-colors"
-                                            title="View Details">
-                                            <span class="material-symbols-outlined text-[18px]">visibility</span>
-                                        </button>
-                                        <button class="p-1.5 text-primary hover:bg-primary/10 rounded transition-colors"
-                                            title="Edit">
-                                            <span class="material-symbols-outlined text-[18px]">edit</span>
-                                        </button>
-                                        <button
-                                            class="p-1.5 text-red-400 hover:text-red-300 hover:bg-red-400/10 rounded transition-colors"
-                                            title="Delete">
-                                            <span class="material-symbols-outlined text-[18px]">delete</span>
-                                        </button>
+
+                                    <div class="flex-1 flex flex-col">
+                                        <div class="flex justify-between items-start">
+                                            <div>
+                                                <h3 class="text-white font-bold text-lg"><?= htmlspecialchars($animal['nom']) ?>
+                                                </h3>
+                                                <p class="text-[#9db9a6] text-xs italic">
+                                                    <?= htmlspecialchars($animal['espece']) ?>
+                                                </p>
+                                            </div>
+                                            <div
+                                                class="px-2 py-1 rounded bg-primary/10 border border-primary/20 text-primary text-[10px] uppercase font-bold tracking-wide">
+                                                <?= htmlspecialchars($animal['habitat_name'] ?? 'Unassigned') ?>
+                                            </div>
+                                        </div>
+
+                                        <p class="mt-2 text-[#9db9a6] text-sm line-clamp-2">
+                                            <?= htmlspecialchars($animal['description']) ?>
+                                        </p>
+
+                                        <div class="mt-auto pt-3 flex items-center justify-between border-t border-white/5">
+                                            <div class="flex items-center gap-2">
+                                                <span
+                                                    class="material-symbols-outlined text-[16px] text-[#9db9a6]">analytics</span>
+                                                <span class="text-xs text-[#9db9a6] font-medium">
+                                                    <span class="text-white"><?= $animal['visites'] ?></span> Views
+                                                </span>
+                                            </div>
+
+                                            <div class="flex gap-1">
+
+                                                <button
+                                                    class="p-1.5 text-primary hover:bg-primary/10 rounded transition-colors edit-animal-btn"
+                                                    data-id="<?= $animal['id_animal'] ?>"
+                                                    data-nom="<?= htmlspecialchars($animal['nom']) ?>"
+                                                    data-espece="<?= htmlspecialchars($animal['espece']) ?>"
+                                                    data-alimentation="<?= htmlspecialchars($animal['alimentation']) ?>"
+                                                    data-pays="<?= htmlspecialchars($animal['paysorigine']) ?>"
+                                                    data-habitat="<?= $animal['id_habitat'] ?>"
+                                                    data-desc="<?= htmlspecialchars($animal['description']) ?>"
+                                                    data-image="<?= htmlspecialchars($animal['image']) ?>">
+                                                    <span class="material-symbols-outlined text-[18px]">edit</span>
+                                                </button>
+                                                <a href="./delete.php?id=<?= $animal['id_animal'] ?>"
+                                                    class="p-1.5 text-red-400 hover:text-red-300 hover:bg-red-400/10 rounded transition-colors"
+                                                    title="Delete">
+                                                    <span class="material-symbols-outlined text-[18px]">delete</span>
+                                                </a>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
+                            <?php endwhile; ?>
+                        <?php else: ?>
+                            <div class="col-span-full py-20 text-center">
+                                <span class="material-symbols-outlined text-6xl text-white/10">pets</span>
+                                <p class="text-[#9db9a6] mt-4">No animals found in the database.</p>
                             </div>
-                        </div>
-                        <div
-                            class="bg-surface-dark rounded-xl border border-white/5 p-4 flex gap-4 group hover:border-primary/30 transition-all">
-                            <div class="w-24 h-24 sm:w-32 sm:h-32 rounded-lg bg-cover bg-center shrink-0"
-                                style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBXYr6bkHu7Nqeo36wN2p1Is7uri7_WfHmgeaU1TDHpIDyBqRafqLqPvCTE75RDKjO7ZZaO3XBrUT9QSAco1sBdjqMeVDrsLAxqlKn9Dc6NmkI4SajI00Lui76emH3L2oyTPW1HEjEGSpzn8BVkX2QdxquIA_Pn6DZdiayVg01rq_3WobpJPGZvHqh0f0m2GJ6HHr4v_l3wIVLMrAvll9O2wOkuxizrrqWzTttQdMemDrNLp4q3TvqE43Xjd2EP0iCDvrZCfhQR7mSV");'>
-                            </div>
-                            <div class="flex-1 flex flex-col">
-                                <div class="flex justify-between items-start">
-                                    <div>
-                                        <h3 class="text-white font-bold text-lg">Reticulated Giraffe</h3>
-                                        <p class="text-[#9db9a6] text-xs italic">Giraffa camelopardalis</p>
-                                    </div>
-                                    <div
-                                        class="px-2 py-1 rounded bg-[#11d452]/10 border border-[#11d452]/20 text-[#11d452] text-[10px] uppercase font-bold tracking-wide">
-                                        Savanna
-                                    </div>
-                                </div>
-                                <p class="mt-2 text-[#9db9a6] text-sm line-clamp-2">
-                                    The tallest land mammal, easily recognized by its long neck and distinctive coat
-                                    pattern.
-                                </p>
-                                <div class="mt-auto pt-3 flex items-center justify-between border-t border-white/5">
-                                    <div class="flex items-center gap-2">
-                                        <span class="w-2 h-2 rounded-full bg-yellow-500"></span>
-                                        <span class="text-xs text-[#9db9a6]">Maintenance</span>
-                                    </div>
-                                    <div class="flex gap-1">
-                                        <button
-                                            class="p-1.5 text-[#9db9a6] hover:text-white hover:bg-white/10 rounded transition-colors"
-                                            title="View Details">
-                                            <span class="material-symbols-outlined text-[18px]">visibility</span>
-                                        </button>
-                                        <button class="p-1.5 text-primary hover:bg-primary/10 rounded transition-colors"
-                                            title="Edit">
-                                            <span class="material-symbols-outlined text-[18px]">edit</span>
-                                        </button>
-                                        <button
-                                            class="p-1.5 text-red-400 hover:text-red-300 hover:bg-red-400/10 rounded transition-colors"
-                                            title="Delete">
-                                            <span class="material-symbols-outlined text-[18px]">delete</span>
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                        <?php endif; ?>
+
                     </div>
                 </div>
             </div>
-            <button class="fixed bottom-4 right-4 flex-1 px-4 py-2 bg-primary rounded-lg
-                       text-black hover:bg-green-400 transition-colors
-                       shadow-lg shadow-primary/20 text-sm font-bold">
+            <button id="add-new-animal"
+                class="fixed bottom-4 right-4 z-40 px-4 py-2 bg-primary rounded-lg text-black hover:bg-green-400 transition-colors shadow-lg shadow-primary/20 text-sm font-bold">
                 + Add new animal
             </button>
-            <!-- Overlay -->
-            <div class="hidden fixed inset-0 z-50 flex items-center justify-center backdrop-blur-md bg-black/40">
 
-                <!-- Modal -->
-                <div class="w-11/12 lg:w-3/5 h-[90vh] lg:h-3/4
-               bg-[#1a2a22] rounded-xl
-               border border-[#28392e]
-               flex flex-col overflow-y-auto
-               scrollbar-none">
-
-                    <!-- Header -->
+            <div id="new-animal-form"
+                class="hidden fixed inset-0 z-50 flex items-center justify-center backdrop-blur-md bg-black/40">
+                <form method="POST" action="./create.php"
+                    class="w-11/12 lg:w-3/5 h-[90vh] lg:h-3/4 bg-[#1a2a22] rounded-xl border border-[#28392e] flex flex-col overflow-hidden">
                     <div class="p-6 border-b border-[#28392e] flex justify-between items-center">
                         <h3 class="text-white font-bold text-lg">Add New Animal</h3>
-                        <button class="text-[#9db9a6] hover:text-white transition-colors">
+                        <button type="button" class="close-modal-btn text-[#9db9a6] hover:text-white">
                             <span class="material-symbols-outlined">close</span>
                         </button>
                     </div>
-
-                    <!-- Body -->
-                    <div class="p-6 flex-1 space-y-6">
-
-                        <!-- Image Upload -->
+                    <div class="p-6 flex-1 space-y-6 overflow-y-auto">
                         <div class="space-y-2">
-                            <label class="block text-sm font-medium text-[#9db9a6]">Animal Image</label>
-                            <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-dashed border-[#5a6b60]
-                           rounded-lg hover:border-primary transition-colors cursor-pointer group">
-                                <div class="space-y-1 text-center">
-                                    <span
-                                        class="material-symbols-outlined text-[#5a6b60] text-4xl group-hover:text-primary transition-colors">
-                                        add_photo_alternate
-                                    </span>
-                                    <div class="flex justify-center text-sm text-[#9db9a6]">
-                                        <span class="font-medium text-primary hover:text-green-400 cursor-pointer">
-                                            Upload a file
-                                        </span>
-                                        <p class="pl-1">or drag and drop</p>
-                                    </div>
-                                    <p class="text-xs text-[#5a6b60]">PNG, JPG, GIF up to 10MB</p>
-                                </div>
+                            <label class="block text-sm font-medium text-[#9db9a6]">Image URL</label>
+                            <input type="url" name="image"
+                                class="w-full px-4 py-3 bg-transparent border-2 border-dashed border-[#5a6b60] rounded-lg text-white"
+                                required>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <input name="nom" placeholder="Common Name"
+                                class="w-full bg-transparent border border-[#5a6b60] rounded-lg px-3 py-2 text-white"
+                                type="text" required />
+                            <input name="espece" placeholder="Species"
+                                class="w-full bg-transparent border border-[#5a6b60] rounded-lg px-3 py-2 text-white"
+                                type="text" required />
+                            <input name="alimentation" placeholder="Diet"
+                                class="w-full bg-transparent border border-[#5a6b60] rounded-lg px-3 py-2 text-white"
+                                type="text" required />
+                            <input name="paysorigine" placeholder="Country"
+                                class="w-full bg-transparent border border-[#5a6b60] rounded-lg px-3 py-2 text-white"
+                                type="text" required />
+                            <div class="md:col-span-2">
+                                <select name="id_habitat"
+                                    class="w-full bg-[#1a2a22] border border-[#5a6b60] rounded-lg px-3 py-2 text-white"
+                                    required>
+                                    <option value="" disabled selected>Select habitat</option>
+                                    <?php $results->data_seek(0);
+                                    while ($row = $results->fetch_assoc()): ?>
+                                        <option value="<?= $row['id_habitat'] ?>"><?= htmlspecialchars($row['nom']) ?>
+                                        </option>
+                                    <?php endwhile; ?>
+                                </select>
                             </div>
                         </div>
-
-                        <!-- Inputs -->
-                        <div class="space-y-4">
-
-                            <div>
-                                <label class="block text-sm font-medium text-[#9db9a6] mb-1" for="name">
-                                    Common Name
-                                </label>
-                                <input class="w-full bg-transparent border border-[#5a6b60] rounded-lg px-3 py-2
-                               text-white placeholder-[#5a6b60]
-                               focus:ring-1 focus:ring-primary focus:border-primary text-sm" id="name"
-                                    placeholder="e.g. African Lion" type="text" />
-                            </div>
-
-                            <div>
-                                <label class="block text-sm font-medium text-[#9db9a6] mb-1" for="species">
-                                    Species (Scientific)
-                                </label>
-                                <input class="w-full bg-transparent border border-[#5a6b60] rounded-lg px-3 py-2
-                               text-white placeholder-[#5a6b60]
-                               focus:ring-1 focus:ring-primary focus:border-primary text-sm" id="species"
-                                    placeholder="e.g. Panthera leo" type="text" />
-                            </div>
-
-                            <div>
-                                <label class="block text-sm font-medium text-[#9db9a6] mb-1" for="habitat">
-                                    Habitat
-                                </label>
-                                <div class="relative">
-                                    <select
-                                        class="w-full bg-surface-dark border border-[#5a6b60] rounded-lg px-3 py-2 text-white focus:ring-1 focus:ring-primary focus:border-primary text-sm appearance-none transition-shadow"
-                                        id="habitat">
-                                        <option disabled="" selected="" value="">Select habitat</option>
-                                        <option value="savanna">Savanna</option>
-                                        <option value="rainforest">Rainforest</option>
-                                        <option value="wetlands">Wetlands</option>
-                                        <option value="desert">Desert</option>
-                                    </select>
-                                    <span
-                                        class="material-symbols-outlined absolute right-3 top-2.5 text-[#5a6b60] pointer-events-none">
-                                        expand_more
-                                    </span>
-                                </div>
-                            </div>
-
-                            <div>
-                                <label class="block text-sm font-medium text-[#9db9a6] mb-1" for="description">
-                                    Description
-                                </label>
-                                <textarea class="w-full bg-transparent border border-[#5a6b60] rounded-lg px-3 py-2
-                               text-white placeholder-[#5a6b60]
-                               focus:ring-1 focus:ring-primary focus:border-primary text-sm" id="description" rows="4"
-                                    placeholder="Enter animal details, behavior, and fun facts..."></textarea>
-                            </div>
-
-                        </div>
+                        <textarea name="description" placeholder="Description..."
+                            class="w-full bg-transparent border border-[#5a6b60] rounded-lg px-3 py-2 text-white"
+                            rows="4"></textarea>
                     </div>
-
-                    <!-- Footer -->
                     <div class="p-6 border-t border-[#28392e] flex gap-3">
-                        <button class="flex-1 px-4 py-2 border border-[#5a6b60] rounded-lg
-                       text-white hover:bg-white/5 transition-colors text-sm font-medium">
-                            Cancel
-                        </button>
-                        <button class="flex-1 px-4 py-2 bg-primary rounded-lg
-                       text-black hover:bg-green-400 transition-colors
-                       shadow-lg shadow-primary/20 text-sm font-bold">
-                            Save Animal
+                        <button type="button"
+                            class="close-modal-btn flex-1 px-4 py-2 border border-[#5a6b60] rounded-lg text-white">Cancel</button>
+                        <button type="submit" name="add_animal"
+                            class="flex-1 px-4 py-2 bg-primary rounded-lg text-black font-bold">Save Animal</button>
+                    </div>
+                </form>
+            </div>
+
+            <div id="edit-animal-form"
+                class="hidden fixed inset-0 z-50 flex items-center justify-center backdrop-blur-md bg-black/40">
+                <form method="POST" action="./edit.php"
+                    class="w-11/12 lg:w-3/5 h-[90vh] lg:h-3/4 bg-[#1a2a22] rounded-xl border border-[#28392e] flex flex-col overflow-hidden">
+                    <div class="p-6 border-b border-[#28392e] flex justify-between items-center">
+                        <h3 class="text-white font-bold text-lg">Edit Animal</h3>
+                        <button type="button" class="close-modal-btn text-[#9db9a6] hover:text-white">
+                            <span class="material-symbols-outlined">close</span>
                         </button>
                     </div>
-
-                </div>
+                    <div class="p-6 flex-1 space-y-6 overflow-y-auto">
+                        <input type="hidden" name="id_animal" id="edit-id_animal">
+                        <div class="space-y-2">
+                            <label class="block text-sm font-medium text-[#9db9a6]">Image URL</label>
+                            <input id="edit-image" type="url" name="image"
+                                class="w-full px-4 py-3 bg-transparent border-2 border-dashed border-[#5a6b60] rounded-lg text-white"
+                                required>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <input id="edit-nom" name="nom"
+                                class="w-full bg-transparent border border-[#5a6b60] rounded-lg px-3 py-2 text-white"
+                                type="text" required />
+                            <input id="edit-espece" name="espece"
+                                class="w-full bg-transparent border border-[#5a6b60] rounded-lg px-3 py-2 text-white"
+                                type="text" required />
+                            <input id="edit-alimentation" name="alimentation"
+                                class="w-full bg-transparent border border-[#5a6b60] rounded-lg px-3 py-2 text-white"
+                                type="text" required />
+                            <input id="edit-paysorigine" name="paysorigine"
+                                class="w-full bg-transparent border border-[#5a6b60] rounded-lg px-3 py-2 text-white"
+                                type="text" required />
+                            <div class="md:col-span-2">
+                                <select id="edit-id_habitat" name="id_habitat"
+                                    class="w-full bg-[#1a2a22] border border-[#5a6b60] rounded-lg px-3 py-2 text-white"
+                                    required>
+                                    <?php $results->data_seek(0);
+                                    while ($row = $results->fetch_assoc()): ?>
+                                        <option value="<?= $row['id_habitat'] ?>"><?= htmlspecialchars($row['nom']) ?>
+                                        </option>
+                                    <?php endwhile; ?>
+                                </select>
+                            </div>
+                        </div>
+                        <textarea id="edit-description" name="description"
+                            class="w-full bg-transparent border border-[#5a6b60] rounded-lg px-3 py-2 text-white"
+                            rows="4"></textarea>
+                    </div>
+                    <div class="p-6 border-t border-[#28392e] flex gap-3">
+                        <button type="button"
+                            class="close-modal-btn flex-1 px-4 py-2 border border-[#5a6b60] rounded-lg text-white">Cancel</button>
+                        <button type="submit" name="save_animal"
+                            class="flex-1 px-4 py-2 bg-primary rounded-lg text-black font-bold">Save Changes</button>
+                    </div>
+                </form>
             </div>
 
         </div>
     </main>
-
+    <script src="/ASSAD/assets/js/script.js"></script>
 </body>
 
 </html>
