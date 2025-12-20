@@ -47,7 +47,7 @@ if ($result->num_rows > 0) {
         if ($row['role'] == 'visiteur') {
             $visitors[] = $row;
         }
-        if ($row['approved'] == '0') {
+        if ($row['approved'] == '0' && $row['role'] !== 'NOTAPPROVED') {
             $pending[] = $row;
         }
         if ($row['role'] == 'guide') {
