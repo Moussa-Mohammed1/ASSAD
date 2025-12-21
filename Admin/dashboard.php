@@ -63,7 +63,7 @@ $stmt_visite = $conn->prepare("SELECT * FROM visitesguidees");
 $stmt_visite->execute();
 $resuts_visite = $stmt_visite->get_result();
 if ($resuts_visite->num_rows > 0) {
-    while ($row = $$resuts_visite->fetch_assoc()) {
+    while ($row = $resuts_visite->fetch_assoc()) {
         if ($row['status'] == 'ACTIVE') {
             $active_v[] = $row;
         }
@@ -105,7 +105,7 @@ $top_two_v->execute();
 $topvisites = [];
 $the_top_two_result = $top_two_v->get_result();
 if ($the_top_two_result->num_rows > 0) {
-    while ($row = $the_top_two->fetch_assoc()) {
+    while ($row = $the_top_two_result->fetch_assoc()) {
         $topvisites[] = $row;
     }
 }
