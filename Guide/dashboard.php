@@ -200,10 +200,10 @@ if ($stmt) {
                     <a class="text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-primary text-sm font-medium transition-colors"
                         href="/ASSAD/Guide/Tours/tours.php">My Tours</a>
                 </nav>
-                <button
-                    class="hidden sm:flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-9 px-4 bg-primary text-[#111813] text-sm font-bold shadow-lg hover:bg-opacity-90 transition-all">
+                <a href="/ASSAD/Guide/Tours/create-tour.php"
+                    class="hidden sm:inline-flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-9 px-4 bg-primary text-[#111813] text-sm font-bold shadow-lg hover:bg-opacity-90 transition-all">
                     <span>Create Tour</span>
-                </button>
+                </a>
                 <div class="flex items-center gap-2">
                     <a href="/ASSAD/logout.php" title="Logout"
                         class="text-gray-600 dark:text-gray-300 hover:text-red-400 transition-colors">
@@ -307,7 +307,7 @@ if ($stmt) {
                             <span class="material-symbols-outlined text-primary">book_online</span>
                             Recent Reservations
                         </h2>
-                        <a class="text-sm font-semibold text-primary hover:underline flex items-center gap-1" href="#">
+                        <a class="text-sm font-semibold text-primary hover:underline flex items-center gap-1" href="./reservations.php">
                             View All <span class="material-symbols-outlined text-base">arrow_forward</span>
                         </a>
                     </div>
@@ -442,7 +442,8 @@ if ($stmt) {
                                             <span class="material-symbols-outlined text-sm fill-current">star_half</span>
                                         </div>
                                         <p class="text-xs text-gray-600 dark:text-gray-300 leading-relaxed">
-                                            <?php echo htmlspecialchars($text); ?></p>
+                                            <?php echo htmlspecialchars($text); ?>
+                                        </p>
                                     </div>
                                 <?php endforeach; ?>
                             <?php endif; ?>
